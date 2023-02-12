@@ -4,6 +4,7 @@ from .forms import DocumentForm
 from .models import GalleryImage
 from django.http import HttpResponse, JsonResponse
 from PIL import Image, ImageFilter
+from django.middleware.csrf import get_token
 
 def index(request):
     if request.method == 'POST':
@@ -23,3 +24,8 @@ def index(request):
 def gallery(request):
     pics = GalleryImage.objects.all()
     return render(request, 'gallery.html', {'context': pics})
+
+def picture(request, id):   
+    pic = GalleryImage.objects.get(id = id)
+    csrf_token = get_token(request)
+    return render(request, 'picture.html', {'picture': picture, 'csrf_token': csrf_token})
