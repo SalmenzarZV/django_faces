@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from .forms import DocumentForm
 from .models import GalleryImage
 from django.http import HttpResponse, JsonResponse
+from PIL import Image, ImageFilter
 
 def index(request):
     if request.method == 'POST':
@@ -11,7 +12,14 @@ def index(request):
             object = form.save()
         
         return redirect('gallery')
-    return render(request, 'index.html', {'form': form})
+    else:
+        pics = GalleryImage.objects.all()
+        context = {
+            'pics': pics
+        }
+        form = DocumentForm()
+    return render(request, 'index.html', {'form': form, 'context': context})
 
 def gallery(request):
-    return render(request, 'gallery.html')
+    pics = GalleryImage.objects.all()
+    return render(request, 'gallery.html', {'context': pics})
