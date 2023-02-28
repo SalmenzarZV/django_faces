@@ -11,8 +11,8 @@
 </head>
 <body>
     <p>im at sUs gallery</p>
+    <a href="{% url 'index' %}">Go back</a>
     <div class="row">
-        <a href="{% url 'index' %}"> < < Go back</a>
         <br>
         <br>
         <br>
@@ -20,6 +20,10 @@
         <img src="{{x.image.url}}" alt"{{x.id}}">
 
         {% endfor %}
+        <br>
+        <br>
+        <br>
     </div>
+    <a href="{% url 'delete' %}">Delete all</a>
 </body>
 </html>

@@ -29,3 +29,7 @@ def picture(request, id):
     pic = GalleryImage.objects.get(id = id)
     csrf_token = get_token(request)
     return render(request, 'picture.html', {'picture': picture, 'csrf_token': csrf_token})
+
+def delete(request):
+    GalleryImage.objects.all().delete()
+    return redirect('index')
