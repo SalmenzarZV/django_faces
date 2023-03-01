@@ -1,15 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf }}" />
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/jcrop/dist/jcrop.css" />
+    <script src="https://unpkg.com/jcrop"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
-    <title>!FBI - Picture</title>
+    <title>!FBI - Picture - {{picture.id}}</title>
 </head>
 <body>
-    <p>im at an specific picture</p>
+    <span style="margin: 10px;"><a href="{% url 'gallery' %}"> Go back </a></span>
+    <span style="margin: 10px;"><a href="{% url 'index' %}">index</a></span>
+    <br><br><br>
+    <h1 style="margin: 10px;">Foto id = {{picture.id}}</h1>
+    {% if picture.blur %}
+        <img src="{{picture.blur.url}}">
+    {% endif %}
+    <img src="{{picture.image.url}}"id="target">
+    <br>
+    <button class="blur" id="blur">Blur</button>
 </body>
+
+<script defer>
+    let info;
+
+    const jcrop = Jcrop.attach("target", {
+      multi: true,
+    });
+
+    const getPicInfo = async (id) => {
+      return fetch(`/faces/aws/${id}`)
+        .then((res) => res.json())
+        .then((data) => data);
+    }
+
+    const processImage = async () => {
+      info = await getPicInfo('{{ picture.id }}')
+      const img = document.getElementById('target')
+      for (x of info) {
+        const width = x.Width * img.width;
+        const left = x.Left * img.width;
+        const top = x.Top * img.height;
+        const height = x.Height * img.height;
+        console.log(width, height, left, top)
+        jcrop.newWidget(Jcrop.Rect.create(left, top, width, height), {});
+      }
+    }
+    
+    processImage();
+
+    const send = async (coords) => {
+      const id = '{{ picture.id }}';
+      const csrf_token = "{{ csrf_token }}"
+      const options = {
+          method: 'POST',
+          body: JSON.stringify({ coords }),
+          headers: {
+              'X-CSRFToken': csrf_token,
+              'Content-Type': 'application/json'
+          }
+      };
+      return fetch(`/faces/blur/${id}`, options)
+  }
+
+
+    $("#blur").click(async () => {
+      let crops = jcrop.crops;
+      const coords = []
+      crops.forEach((crop) => {
+        coords.push({x: crop.pos.x, y: crop.pos.y, w: crop.pos.w, h: crop.pos.h})
+      });
+      // console.log(coords);
+      await send(coords);
+      window.location.reload();
+    });
+  </script>
+
 </html>
